@@ -88,6 +88,7 @@ function getPlayers(room) {
     return [...room.players.values()].map(player => ({
         id: player.id,
         name: player.name,
+        color: player.color, // เพิ่มส่ง color
         score: player.score,
         host: player.host
     }));
@@ -147,6 +148,7 @@ wss.on("connection", ws => {
             room.players.set(id, {
                 id,
                 name: message.name?.trim() || "Host",
+                color: message.color || "#ffffff", // บันทึกสี
                 score: 0,
                 host: true,
                 ws
@@ -181,6 +183,7 @@ wss.on("connection", ws => {
             room.players.set(id, {
                 id,
                 name: message.name?.trim() || "Player",
+                color: message.color || "#ffffff", // บันทึกสี
                 score: 0,
                 host: false,
                 ws
