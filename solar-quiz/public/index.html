@@ -953,7 +953,10 @@ button:disabled {
 
 <body>
 
-<div id="scene"></div>
+<div id="scene">         <!-- ปุ่มเปิด/ปิดเสียง BGM -->
+    <button id="bgmToggleBtn" class="secondary" onclick="toggleBGM()" style="padding: 4px 10px; font-size: 16px; margin-right: 4px;">
+        🔊
+    </button></div>
 <div id="floating-astronauts-container"></div>
 
 <div class="app">
@@ -984,12 +987,17 @@ button:disabled {
             </div>
 
             <div class="color-picker">
+
+       
+
                 <div class="color-btn" style="background: #ffffff;" onclick="changeAstroColor('#ffffff')"></div>
                 <div class="color-btn" style="background: #ff4757;" onclick="changeAstroColor('#ff4757')"></div>
                 <div class="color-btn" style="background: #2ed573;" onclick="changeAstroColor('#2ed573')"></div>
                 <div class="color-btn" style="background: #1e90ff;" onclick="changeAstroColor('#1e90ff')"></div>
                 <div class="color-btn" style="background: #ffa502;" onclick="changeAstroColor('#ffa502')"></div>
             </div>
+
+            
         </div>
         
         <div class="sub">Explore the Solar System & Test Your Knowledge</div>
@@ -1713,6 +1721,23 @@ function createParticles() {
 /* ================= BGM SYNTHESIZER ================= */
 let bgmInterval = null;
 let isBgmPlaying = false;
+let bgmMuted = false; // ตัวแปรเก็บสถานะปิดเสียงเพลง
+
+// ฟังก์ชันเปิด/ปิดเสียง BGM
+window.toggleBGM = function() {
+    bgmMuted = !bgmMuted;
+    const btn = document.getElementById("bgmToggleBtn");
+    
+    if (bgmMuted) {
+        if (btn) btn.textContent = "🔇";
+    } else {
+        if (btn) btn.textContent = "🔊";
+        // ถ้าเพลงยังไม่เล่น ให้เริ่มเล่น
+        if (!isBgmPlaying) {
+            startBGM();
+        }
+    }
+};
 
 function startBGM() {
     if (isBgmPlaying) return;
@@ -1737,6 +1762,11 @@ function startBGM() {
     let step = 0;
 
     bgmInterval = setInterval(() => {
+        // ถ้าตั้งค่า Mute ไว้ จะข้ามการส่งเสียงโน้ต (แต่ยังรันจังหวะต่อเพื่อความต่อเนื่อง)
+        if (bgmMuted) {
+            step = (step + 1) % 32;
+            return;
+        }
         const now = audioCtx.currentTime;
 
         const melOsc = audioCtx.createOscillator();
@@ -1836,6 +1866,18 @@ window.spawnFloatingAstronauts = function(playersList) {
 window.clearFloatingAstronauts = function() {
     document.getElementById("floating-astronauts-container").innerHTML = "";
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 document.addEventListener("click", () => {
     startBGM();
