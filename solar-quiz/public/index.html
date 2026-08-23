@@ -593,6 +593,124 @@ button:disabled {
     }
 }
 
+
+
+
+    /* ================= MOBILE LANDSCAPE (มือถือแนวนอน) ================= */
+@media (max-height: 500px) and (orientation: landscape) {
+    /* ปรับ Layout หลักให้อยู่กึ่งกลางหน้าจอ */
+    .app {
+        justify-content: center;
+        padding: 8px;
+    }
+
+    .panel-container {
+        width: min(720px, 98vw);
+        margin-bottom: 0;
+        top: 120px;
+    }
+
+    .panel {
+        max-height: 90vh; /* ให้กล่องใช้พื้นที่ความสูงได้อย่างคุ้มค่า */
+        padding: 12px 20px;
+        border-radius: 16px;
+    }
+
+    /* ปรับขนาดและตำแหน่งนักบินอวกาศ */
+    .astronaut-wrapper {
+        top: -80px;
+        left: 10px;
+        transform: scale(0.38);
+    }
+
+    /* ปรับ Speech Bubble ให้กะทัดรัด ไม่บังพื้นที่เกม */
+    .speech-bubble {
+        width: 300px;
+        bottom: 90px;
+        left: 0;
+        padding: 10px;
+    }
+
+    .speech-bubble p {
+        font-size: 25px;
+        margin-bottom: 6px;
+    }
+
+    .speech-bubble button {
+        font-size: 20px;
+        padding: 4px 8px;
+    }
+
+    /* ปรับแบบ 2 คอลัมน์สำหรับหน้า Home (Nickname / Game PIN) */
+    #home {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 16px;
+        align-items: center;
+    }
+
+    #home .badge, 
+    #home h1, 
+    #home .sub, 
+    #home .status {
+        grid-column: span 2;
+        margin-bottom: 2px;
+    }
+
+    #home h1 {
+        font-size: 24px;
+    }
+
+    #home .sub {
+        margin-bottom: 6px;
+    }
+
+    .input-row {
+        margin-bottom: 0;
+    }
+
+    /* ปรับ UI หน้า QUIZ ให้เลือกคำตอบง่ายขึ้น */
+    .question {
+        font-size: 16px;
+        margin: 4px 0 8px;
+    }
+
+    .answers {
+        grid-template-columns: 1fr 1fr; /* แบ่งคำตอบเป็น 2 คอลัมน์คู่ */
+        gap: 6px;
+    }
+
+    .answer {
+        min-height: 38px;
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    /* ปรับแท่น Podium ตอนจบเกม */
+    .podium-container {
+        height: 140px;
+        margin: 8px 0 4px;
+    }
+
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .podium-name {
+        font-size: 12px;
+    }
+
+    .podium-score {
+        font-size: 11px;
+    }
+}
+    
+
+    
+
 </style>
 </head>
 
