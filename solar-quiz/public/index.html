@@ -596,115 +596,100 @@ button:disabled {
 
 
 
-    /* ================= MOBILE LANDSCAPE (มือถือแนวนอน) ================= */
+ /* ================= MOBILE LANDSCAPE FIX (COMPACT PANEL) ================= */
 @media (max-height: 500px) and (orientation: landscape) {
-    /* ปรับ Layout หลักให้อยู่กึ่งกลางหน้าจอ */
+
+    /* 1. จัด Layout ให้ Panel วางลงมาชิดขอบล่าง เพื่อเปิดพื้นที่ครึ่งบนให้เห็นดาว */
     .app {
-        justify-content: center;
-        padding: 8px;
+        justify-content: flex-end;
+        padding: 8px 16px;
     }
 
+    /* 2. บีบความกว้าง Panel ให้กระทัดรัด ไม่บังฉากหลัง */
     .panel-container {
-        width: min(720px, 98vw);
+        width: min(400px, 45vw); /* ย่อความกว้างลงเหลือ 480px */
         margin-bottom: 0;
-        top: 120px;
     }
 
     .panel {
-        max-height: 90vh; /* ให้กล่องใช้พื้นที่ความสูงได้อย่างคุ้มค่า */
-        padding: 12px 20px;
-        border-radius: 16px;
+        max-height: 75vh;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: rgba(15, 20, 45, 0.75); /* เพิ่มความโปร่งแสงให้มองเห็นฉากหลังทะลุได้เบาๆ */
     }
 
-    /* ปรับขนาดและตำแหน่งนักบินอวกาศ */
-    .astronaut-wrapper {
-        top: -80px;
-        left: 10px;
-        transform: scale(0.38);
-    }
-
-    /* ปรับ Speech Bubble ให้กะทัดรัด ไม่บังพื้นที่เกม */
-    .speech-bubble {
-        width: 300px;
-        bottom: 90px;
-        left: 0;
-        padding: 10px;
-    }
-
-    .speech-bubble p {
-        font-size: 25px;
-        margin-bottom: 6px;
-    }
-
-    .speech-bubble button {
-        font-size: 20px;
-        padding: 4px 8px;
-    }
-
-    /* ปรับแบบ 2 คอลัมน์สำหรับหน้า Home (Nickname / Game PIN) */
-    #home {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px 16px;
-        align-items: center;
-    }
-
-    #home .badge, 
-    #home h1, 
-    #home .sub, 
-    #home .status {
-        grid-column: span 2;
+    /* 3. ย่อขนาด Header และองค์ประกอบภายใน */
+    h1 {
+        font-size: 18px;
+        letter-spacing: -0.5px;
         margin-bottom: 2px;
     }
 
-    #home h1 {
-        font-size: 24px;
+    .sub {
+        font-size: 11px;
+        margin-bottom: 8px;
     }
 
-    #home .sub {
-        margin-bottom: 6px;
+    .badge {
+        font-size: 9px;
+        margin-bottom: 2px;
+    }
+
+    /* 4. ย่อขนาดช่อง Input และปุ่มกด */
+    input {
+        padding: 6px 10px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+
+    button {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 8px;
     }
 
     .input-row {
-        margin-bottom: 0;
-    }
-
-    /* ปรับ UI หน้า QUIZ ให้เลือกคำตอบง่ายขึ้น */
-    .question {
-        font-size: 16px;
-        margin: 4px 0 8px;
-    }
-
-    .answers {
-        grid-template-columns: 1fr 1fr; /* แบ่งคำตอบเป็น 2 คอลัมน์คู่ */
         gap: 6px;
+        margin-bottom: 6px;
     }
 
-    .answer {
-        min-height: 38px;
+    /* 5. ปรับตัวนักบินอวกาศและ Speech Bubble ให้สมส่วนกับ Panel ใหม่ */
+    .astronaut-wrapper {
+        top: -80px;
+        left: 6px;
+        transform: scale(0.28);
+    }
+
+    .speech-bubble {
+        top: -120px;
+        left: 20px;
+        bottom: auto;
+        width: 220px;
         padding: 6px 10px;
-        font-size: 13px;
+        border-radius: 10px;
     }
 
-    /* ปรับแท่น Podium ตอนจบเกม */
-    .podium-container {
-        height: 140px;
-        margin: 8px 0 4px;
-    }
-
-    .avatar-circle {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
+    .speech-bubble p {
+        font-size: 11px;
+        line-height: 1.3;
         margin-bottom: 4px;
     }
 
-    .podium-name {
-        font-size: 12px;
+    .speech-bubble button {
+        font-size: 11px;
+        padding: 3px 6px;
     }
 
-    .podium-score {
-        font-size: 11px;
+    /* 6. ย่อขนาดหน้าคำถาม (Quiz) */
+    .question {
+        font-size: 14px;
+        margin: 4px 0 6px;
+    }
+
+    .answer {
+        min-height: 34px;
+        padding: 4px 8px;
+        font-size: 12px;
     }
 }
     
