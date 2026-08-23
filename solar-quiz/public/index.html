@@ -549,8 +549,9 @@ button:disabled {
         flex-direction: column;
     }
 
+    /* จัดตำแหน่ง Panel ให้กึ่งกลาง ไม่โดนขยับขึ้น-ลงผิดปกติ */
     .panel-container {
-        top: -30px;
+        top: 0;
         width: 100vw;
         margin-bottom: 0;
     }
@@ -558,24 +559,40 @@ button:disabled {
     .panel {
         padding: 16px;
         border-radius: 16px 16px 0 0;
+        max-height: 80vh; /* ให้กล่องมีพื้นที่ scroll และไม่ยาวเกินจอ */
     }
 
+    /* ปรับขนาดและตำแหน่งของนักบินอวกาศในมือถือ */
     .astronaut-wrapper {
         top: -80px;
         left: 12px;
-        transform: scale(0.52);
+        transform: scale(0.45);
     }
 
+    /* ย่อขนาดกล่องคำพูด (Speech Bubble) ไม่ให้ใหญ่เกินไปและไม่บัง UI */
     .speech-bubble {
         width: 230px;
-        bottom: 95px;
-        padding: 12px;
+        bottom: 110px;
+        padding: 10px 12px;
+        left: 0;
+    }
+
+    .speech-bubble p {
+        font-size: 26px; /* ลดขนาดฟอนต์ในมือถือลง */
+        line-height: 1.3;
+        margin-bottom: 8px;
+    }
+
+    .speech-bubble button {
+        font-size: 20px;
+        padding: 6px 10px;
     }
 
     .badge, h1, .panel > div > h2:first-child {
         padding-left: 0 !important;
     }
 }
+
 </style>
 </head>
 
