@@ -739,7 +739,7 @@ button:disabled {
     .panel-container {
         width: min(360px, 45vw);
         margin-bottom: 0;
-        top: 20px;
+        top: 0px;
     }
 
     .panel {
@@ -862,6 +862,7 @@ button:disabled {
 }
 
 /* ================= FLOATING ASTRONAUTS STYLES (FIXED) ================= */
+/* ================= FLOATING ASTRONAUTS STYLES (PHYSICS BASED) ================= */
 #floating-astronauts-container {
     position: fixed;
     inset: 0;
@@ -870,21 +871,15 @@ button:disabled {
     overflow: hidden;
 }
 
-/* ตัวแม่: ควบคุมการลอยข้ามหน้าจอซ้าย -> ขวา */
-/* ตัวแม่: ควบคุมการลอยข้ามหน้าจอซ้าย -> ขวา */
 .floating-astro {
     position: absolute;
     width: 50px;
     height: 56px;
-    top: var(--start-y, 50vh);
-    left: -100px; /* ให้ตั้งต้นซ่อนอยู่นอกจอฝั่งซ้ายทันที ไม่ไปกองที่ซ้ายบน (0,0) */
-    animation-name: driftAlong;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-fill-mode: backwards; /* ให้ใช้ค่าจาก Keyframe 0% ตั้งแต่ช่วงรอ animation-delay */
+    top: 0;
+    left: 0;
+    will-change: transform; /* ช่วยให้การลอยลื่นไหลขึ้น */
 }
 
-/* ตัวลูก: ควบคุมดีไซน์และอนิเมชันหมุนเอียงไปมา */
 .floating-astro .astro-body {
     width: 100%;
     height: 100%;
@@ -892,7 +887,6 @@ button:disabled {
     border: 3px solid #000;
     background: var(--astro-main-color);
     position: relative;
-    animation: rotateAstro 3s ease-in-out infinite alternate;
 }
 
 .floating-astro .astro-body::before {
@@ -932,6 +926,8 @@ button:disabled {
     border-radius: 8px;
     white-space: nowrap;
 }
+
+
 
 @keyframes driftAlong {
     0% {
@@ -1012,7 +1008,7 @@ button:disabled {
             <button class="secondary" onclick="joinGame()">Join Game</button>
         </div>
 
-        <!-- <div class="status" id="connection">Connecting...</div> -->
+        <div class="status" id="connection">Connecting...</div>
     </div>
 
     <!-- ================= LOBBY ================= -->
@@ -1826,12 +1822,19 @@ window.changeAstroColor = function(color) {
 
 /* ================= FLOATING ASTRONAUTS (FIXED) ================= */
 // อัปเดตฟังก์ชันแสดงตัวลอย ให้ดึง p.color ของแต่ละคนมาใช้
-window.spawnFloatingAstronauts = function(playersList) {
-    const container = document.getElementById("floating-astronauts-container");
-    container.innerHTML = "";
+/* ================= FLOATING ASTRONAUTS (PHYSICS & BOUNCE) ================= */
+let activeAstronauts = [];
+let astroAnimationPhysicsFrame = null;
 
+window.spawnFloatingAstronauts = function(playersList) {
+    window.clearFloatingAstronauts();
+
+    const container = document.getElementById("floating-astronauts-container");
     const players = (playersList && playersList.length > 0) ? playersList : [];
     if (players.length === 0) return;
+
+    const astroWidth = 50;
+    const astroHeight = 56;
 
     players.forEach((player) => {
         const astro = document.createElement("div");
@@ -1839,19 +1842,7 @@ window.spawnFloatingAstronauts = function(playersList) {
 
         const astroBody = document.createElement("div");
         astroBody.className = "astro-body";
-        
-        // ใช้สีเฉพาะตัวของ Player คนนั้นๆ (หากไม่มีให้ใช้สีขาว #ffffff)
         astroBody.style.backgroundColor = player.color || "#ffffff";
-
-        const startY = Math.random() * 70 + 10 + "vh";
-        const endY = Math.random() * 70 + 10 + "vh";
-        const duration = (Math.random() * 10 + 15) + "s";
-        const delay = (Math.random() * 4) + "s";
-
-        astro.style.setProperty("--start-y", startY);
-        astro.style.setProperty("--end-y", endY);
-        astro.style.animationDuration = duration;
-        astro.style.animationDelay = delay;
 
         const label = document.createElement("div");
         label.className = "astro-label";
@@ -1860,8 +1851,80 @@ window.spawnFloatingAstronauts = function(playersList) {
         astroBody.appendChild(label);
         astro.appendChild(astroBody);
         container.appendChild(astro);
+
+        // สุ่มตำแหน่งเริ่มต้นไม่ให้ทับขอบจอ
+        const x = Math.random() * (window.innerWidth - astroWidth);
+        const y = Math.random() * (window.innerHeight - astroHeight);
+
+        // สุ่มความเร็วและทิศทาง (-2 ถึง 2)
+        const vx = (Math.random() - 0.5) * 3;
+        const vy = (Math.random() - 0.5) * 3;
+
+        // สุ่มการหมุนตัว
+        const rotation = Math.random() * 360;
+        const vRot = (Math.random() - 0.5) * 1.5; // ความเร็วในการหมุนตัว
+
+        activeAstronauts.push({
+            element: astro,
+            x: x,
+            y: y,
+            vx: vx === 0 ? 1 : vx, // ป้องกันความเร็วเป็น 0
+            vy: vy === 0 ? 1 : vy,
+            rotation: rotation,
+            vRot: vRot,
+            width: astroWidth,
+            height: astroHeight
+        });
     });
+
+    // เริ่ม Loop การคำนวณตำแหน่ง
+    runAstroPhysics();
 };
+
+
+
+function runAstroPhysics() {
+    cancelAnimationFrame(astroAnimationPhysicsFrame);
+
+    function update() {
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        activeAstronauts.forEach(astro => {
+            // อัปเดตตำแหน่ง
+            astro.x += astro.vx;
+            astro.y += astro.vy;
+            astro.rotation += astro.vRot;
+
+            // เช็กการชนขอบจอซ้าย-ขวา
+            if (astro.x <= 0) {
+                astro.x = 0;
+                astro.vx *= -1; // เด้งกลับ
+            } else if (astro.x + astro.width >= screenWidth) {
+                astro.x = screenWidth - astro.width;
+                astro.vx *= -1; // เด้งกลับ
+            }
+
+            // เช็กการชนขอบจอบน-ล่าง
+            if (astro.y <= 0) {
+                astro.y = 0;
+                astro.vy *= -1; // เด้งกลับ
+            } else if (astro.y + astro.height >= screenHeight) {
+                astro.y = screenHeight - astro.height;
+                astro.vy *= -1; // เด้งกลับ
+            }
+
+            // แสดงผลตำแหน่งและการหมุน
+            astro.element.style.transform = `translate3d(${astro.x}px, ${astro.y}px, 0px) rotate(${astro.rotation}deg)`;
+        });
+
+        astroAnimationPhysicsFrame = requestAnimationFrame(update);
+    }
+
+    update();
+}
+
+
 
 window.clearFloatingAstronauts = function() {
     document.getElementById("floating-astronauts-container").innerHTML = "";
