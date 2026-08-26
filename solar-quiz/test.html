@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar System - Three.js</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    #info {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: white;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    #info h1 {
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+
+    #info p {
+      color: #aaa;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="info">
+    <h1>Solar System</h1>
+    <p>Drag to rotate • Scroll to zoom</p>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // =========================================
+    // Scene
+    // =========================================
+
+    const scene = new THREE.Scene();
+
+    scene.background = new THREE.Color(0x000000);
+
+    // =========================================
+    // Camera
+    // =========================================
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      2000
+    );
+
+    camera.position.set(0, 40, 100);
+
+    // =========================================
+    // Renderer
+    // =========================================
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio, 2)
+    );
+
+    document.body.appendChild(renderer.domElement);
+
+    // =========================================
+    // Controls
+    // =========================================
+
+    const controls = new OrbitControls(
+      camera,
+      renderer.domElement
+    );
+
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    controls.minDistance = 5;
+    controls.maxDistance = 500;
+
+    // =========================================
+    // Lights
+    // =========================================
+
+    // แสงจากดวงอาทิตย์
+    const sunLight = new THREE.PointLight(
+      0xffffff,
+      2000,
+      500
+    );
+
+    scene.add(sunLight);
+
+    // แสง ambient เล็กน้อย
+    const ambientLight = new THREE.AmbientLight(
+      0xffffff,
+      0.03
+    );
+
+    scene.add(ambientLight);
+
+    // =========================================
+    // Stars
+    // =========================================
+
+    const starGeometry = new THREE.BufferGeometry();
+
+    const starCount = 5000;
+
+    const starPositions = new Float32Array(
+      starCount * 3
+    );
+
+    for (let i = 0; i < starCount * 3; i++) {
+
+      starPositions[i] =
+        (Math.random() - 0.5) * 1500;
+
+    }
+
+    starGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(
+        starPositions,
+        3
+      )
+    );
+
+    const starMaterial =
+      new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 1
+      });
+
+    const stars = new THREE.Points(
+      starGeometry,
+      starMaterial
+    );
+
+    scene.add(stars);
+
+    // =========================================
+    // Sun
+    // =========================================
+
+    const sunGeometry =
+      new THREE.SphereGeometry(
+        5,
+        64,
+        64
+      );
+
+    const sunMaterial =
+      new THREE.MeshBasicMaterial({
+        color: 0xffaa00
+      });
+
+    const sun =
+      new THREE.Mesh(
+        sunGeometry,
+        sunMaterial
+      );
+
+    scene.add(sun);
+
+    // =========================================
+    // Planets
+    // =========================================
+
+    const planets = [
+
+      {
+        name: "Mercury",
+        size: 0.7,
+        distance: 9,
+        color: 0xaaaaaa,
+        speed: 0.04
+      },
+
+      {
+        name: "Venus",
+        size: 1.1,
+        distance: 13,
+        color: 0xd8a15d,
+        speed: 0.03
+      },
+
+      {
+        name: "Earth",
+        size: 1.2,
+        distance: 18,
+        color: 0x2277ff,
+        speed: 0.02
+      },
+
+      {
+        name: "Mars",
+        size: 0.9,
+        distance: 23,
+        color: 0xdd4422,
+        speed: 0.017
+      },
+
+      {
+        name: "Jupiter",
+        size: 3.2,
+        distance: 32,
+        color: 0xd8a878,
+        speed: 0.009
+      },
+
+      {
+        name: "Saturn",
+        size: 2.7,
+        distance: 43,
+        color: 0xddc28a,
+        speed: 0.007
+      },
+
+      {
+        name: "Uranus",
+        size: 2,
+        distance: 53,
+        color: 0x66ccdd,
+        speed: 0.005
+      },
+
+      {
+        name: "Neptune",
+        size: 1.9,
+        distance: 63,
+        color: 0x3366dd,
+        speed: 0.004
+      }
+
+    ];
+
+    // =========================================
+    // Create planets
+    // =========================================
+
+    planets.forEach((data) => {
+
+      // วงโคจร
+      const orbitGeometry =
+        new THREE.RingGeometry(
+          data.distance - 0.03,
+          data.distance + 0.03,
+          128
+        );
+
+      const orbitMaterial =
+        new THREE.MeshBasicMaterial({
+          color: 0x555555,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.35
+        });
+
+      const orbit =
+        new THREE.Mesh(
+          orbitGeometry,
+          orbitMaterial
+        );
+
+      orbit.rotation.x =
+        Math.PI / 2;
+
+      scene.add(orbit);
+
+      // Planet
+      const geometry =
+        new THREE.SphereGeometry(
+          data.size,
+          32,
+          32
+        );
+
+      const material =
+        new THREE.MeshStandardMaterial({
+          color: data.color,
+          roughness: 0.8
+        });
+
+      const planet =
+        new THREE.Mesh(
+          geometry,
+          material
+        );
+
+      planet.position.x =
+        data.distance;
+
+      scene.add(planet);
+
+      // เก็บข้อมูลไว้ animate
+      planet.userData = {
+        distance: data.distance,
+        speed: data.speed,
+        angle: Math.random() * Math.PI * 2,
+        name: data.name
+      };
+
+      // Saturn ring
+      if (data.name === "Saturn") {
+
+        const ringGeometry =
+          new THREE.RingGeometry(
+            data.size * 1.4,
+            data.size * 2.2,
+            64
+          );
+
+        const ringMaterial =
+          new THREE.MeshBasicMaterial({
+            color: 0xc9b58a,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.7
+          });
+
+        const ring =
+          new THREE.Mesh(
+            ringGeometry,
+            ringMaterial
+          );
+
+        ring.rotation.x =
+          Math.PI / 2.5;
+
+        planet.add(ring);
+      }
+
+    });
+
+    // =========================================
+    // Animation
+    // =========================================
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+
+      requestAnimationFrame(animate);
+
+      const delta =
+        clock.getDelta();
+
+      // Sun rotation
+      sun.rotation.y +=
+        delta * 0.2;
+
+      // ดาวเคราะห์
+      scene.traverse((object) => {
+
+        if (
+          object.userData &&
+          object.userData.distance
+        ) {
+
+          const data =
+            object.userData;
+
+          data.angle +=
+            data.speed;
+
+          object.position.x =
+            Math.cos(data.angle) *
+            data.distance;
+
+          object.position.z =
+            Math.sin(data.angle) *
+            data.distance;
+
+          object.rotation.y +=
+            delta * 0.5;
+        }
+
+      });
+
+      // ดาวหมุนช้า ๆ
+      stars.rotation.y +=
+        delta * 0.005;
+
+      controls.update();
+
+      renderer.render(
+        scene,
+        camera
+      );
+    }
+
+    animate();
+
+    // =========================================
+    // Resize
+    // =========================================
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        camera.aspect =
+          window.innerWidth /
+          window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+          window.innerWidth,
+          window.innerHeight
+        );
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
