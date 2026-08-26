@@ -1628,6 +1628,11 @@ function finishMission(success, failReason){
         };
     } else {
         continueGame = () => {
+            if (currentLevelIndex >= PLANET_LEVELS.length - 1) {
+                currentLevelIndex = 0;
+            } else {
+                currentLevelIndex++;
+            }
             leaderboardEl.style.display = "none";
             gamePanelEl.style.display = "block";
             loadLevel(currentLevelIndex);
