@@ -1,0 +1,232 @@
+/* ของที่ทุกหน้าใช้ร่วมกัน: ปุ่มเสียง และชิปผู้เล่นที่มีอวตาร */
+.sound-toggle {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 50;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .35);
+    color: #fff;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+.sound-toggle:hover { background: rgba(0, 0, 0, .55); }
+
+/* ปุ่มสลับภาษา วางเรียงซ้ายของปุ่มเสียง/เต็มจอ */
+.lang-toggle {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 50;
+    height: 42px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 21px;
+    background: rgba(0, 0, 0, .35);
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.lang-toggle:hover { background: rgba(0, 0, 0, .55); }
+/* ปุ่มมุมขวาบนเรียงกันเอง ไม่ต้องคำนวณ offset ทีละหน้า */
+body > .sound-toggle { right: 14px; }
+body > .fs-toggle { right: 64px; }
+body > .lang-toggle { right: 114px; }
+
+/* ปุ่มเต็มจอ วางถัดจากปุ่มเสียง */
+.fs-toggle {
+    position: fixed;
+    top: 14px;
+    right: 64px;
+    z-index: 50;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .35);
+    color: #fff;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+.fs-toggle:hover { background: rgba(0, 0, 0, .55); }
+
+.player-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 13px 6px 8px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .18);
+    font-weight: 700;
+}
+.player-chip .avatar { display: inline-flex; line-height: 0; }
+.player-chip.is-away { opacity: .45; }
+
+.avatar svg { display: block; overflow: visible; }
+
+/* ลอยแบบไร้น้ำหนัก ใช้เฉพาะที่ที่อวตารเป็นพระเอกของจอ ไม่ใช้ในลิสต์รายชื่อ */
+@keyframes kg-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(3deg); }
+}
+.avatar-float { animation: kg-float 4s ease-in-out infinite; }
+
+@keyframes kg-pop {
+    0% { transform: scale(.6); opacity: 0; }
+    70% { transform: scale(1.12); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.kg-pop { animation: kg-pop .32s ease-out; }
+
+/* หลอดเวลา: ยาวเต็มตอนเริ่ม แล้วหดลงตามเวลาที่เหลือจริงจากเซิร์ฟเวอร์ */
+.timer-track {
+    width: min(100%, 520px);
+    height: 20px;
+    margin: 0 auto 8px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .28);
+    overflow: hidden;
+}
+.timer-track.is-hidden { visibility: hidden; }
+.timer-fill {
+    width: 100%;
+    height: 100%;
+    background: #26890c;
+    /* ย่อด้วย scaleX ไม่ใช่ width เป็น % เพราะ transform ไม่ต้องคำนวณ layout ใหม่
+       ปลายหลอดอาศัย overflow:hidden + border-radius ของ track ตัดให้มนเอง */
+    transform-origin: left center;
+    transform: scaleX(1);
+    /* ไม่ใส่ transition เลย ทั้งความยาวและสีต้องตรงกับตัวเลขที่โชว์ทันที
+       เคยใส่แล้วหลอดกับสีวิ่งตามหลังเวลาจริงจนดูเพี้ยน */
+}
+.timer-fill.is-mid { background: #d89e00; }
+.timer-fill.is-low { background: #e21b3c; }
+
+/* ===============================
+   BLACK HOLE RUN — เวทีไล่ล่า (จอ host เท่านั้น)
+   =============================== */
+.run-arena {
+    position:relative;
+    width:100%;
+    /* อย่าใช้ height:100% เพราะพ่อเป็น flex item ที่ความสูงมาจากลูก จะวนเป็นวงกลมจนสูง 0
+       ให้ยืดด้วย flex แทน แล้วพ่อเป็น display:flex */
+    flex:1 1 auto;
+    min-height:200px;
+    border-radius:16px;
+    overflow:hidden;
+    background:
+        radial-gradient(120% 90% at 0% 50%, #1b0730 0%, transparent 55%),
+        linear-gradient(180deg, #150a26 0%, #2b1a4d 55%, #3b2a63 100%);
+}
+
+/* ดาวไหลจากขวาไปซ้าย ทำให้รู้สึกว่าทุกคนกำลังพุ่งไปข้างหน้า */
+.run-stars {
+    position:absolute; inset:0;
+    background-image:
+        radial-gradient(2px 2px at 12% 18%, #fff9, transparent 60%),
+        radial-gradient(1.5px 1.5px at 38% 62%, #fff7, transparent 60%),
+        radial-gradient(2.5px 2.5px at 66% 30%, #fff6, transparent 60%),
+        radial-gradient(1.5px 1.5px at 88% 76%, #fff8, transparent 60%),
+        radial-gradient(1.5px 1.5px at 54% 88%, #fff5, transparent 60%);
+    background-size:240px 100%;
+    background-repeat:repeat-x;
+    animation:run-stars 4s linear infinite;
+}
+@keyframes run-stars { to { background-position:-240px 0; } }
+
+/* พื้นเรืองแสงด้านล่าง ให้เวทีมีระนาบ ไม่ลอยเท้งเต้ง */
+.run-floor {
+    position:absolute; left:0; right:0; bottom:0;
+    height:14%;
+    background:linear-gradient(180deg, transparent, #7c3aed44);
+    border-top:2px solid #a78bfa55;
+}
+
+/* หลุมดำตัวร้าย อยู่ซ้ายสุด กินพื้นที่ตามความสูงเวที */
+.run-hole {
+    position:absolute; left:2%; top:50%;
+    width:clamp(90px,14vw,190px);
+    aspect-ratio:1;
+    transform:translateY(-50%);
+    border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, #000 0 38%, #7c3aed 54%, #c084fc 68%, transparent 76%);
+    animation:run-hole-spin 4s linear infinite, run-hole-pulse 2s ease-in-out infinite;
+}
+@keyframes run-hole-spin { to { transform:translateY(-50%) rotate(360deg); } }
+@keyframes run-hole-pulse { 50% { box-shadow:0 0 46px 16px #7c3aed66; } }
+
+/* ตัวนอกคุมตำแหน่ง ตัวในคุมแอนิเมชัน จะได้ไม่แย่ง transform กัน */
+.run-pilot {
+    position:absolute;
+    transform:translate(-50%,-50%);
+    transition:left .9s cubic-bezier(.34,1.2,.64,1), top .6s ease;
+    white-space:nowrap;
+    text-align:center;
+}
+.run-body { animation:run-float 1.6s ease-in-out infinite; }
+@keyframes run-float {
+    0%, 100% { transform:translateY(0) rotate(-3deg); }
+    50%      { transform:translateY(-7px) rotate(3deg); }
+}
+
+/* ไอพ่นท้ายลำ วางซ้ายของตัวนักบิน */
+.run-jet {
+    position:absolute; right:100%; top:38%;
+    width:18px; height:10px;
+    margin-right:2px;
+    border-radius:50% 0 0 50%;
+    background:linear-gradient(90deg, transparent, #f59e0b, #fde68a);
+    animation:run-jet .25s steps(2,end) infinite;
+}
+@keyframes run-jet {
+    0%   { opacity:.5; transform:scaleX(.7); }
+    100% { opacity:1;  transform:scaleX(1.3); }
+}
+
+.run-label { margin-top:2px; }
+.run-name { font-size:clamp(12px,1.3vw,17px); font-weight:800; text-shadow:0 2px 4px #000; }
+.run-lead { font-size:clamp(10px,1.1vw,13px); opacity:.85; }
+.run-lead.run-danger { color:#ff9f9f; }
+
+/* ตอบถูก = เร่งเครื่องพุ่งไปข้างหน้า ไอพ่นยาวขึ้นและเป็นสีฟ้า */
+.run-body.is-boost { animation:run-boost .7s ease-out; }
+.is-boost .run-jet { width:34px; background:linear-gradient(90deg, transparent, #38bdf8, #fff); }
+@keyframes run-boost {
+    0%   { transform:translateX(-14px) scale(.95); }
+    45%  { transform:translateX(8px) scale(1.14); }
+    100% { transform:translateX(0) scale(1); }
+}
+
+/* ตอบไม่ได้ = โดนแรงดึงกระชากถอยหลังแล้วสั่น */
+.run-body.is-pulled { animation:run-pulled .7s ease-in-out; }
+@keyframes run-pulled {
+    0%, 100% { transform:translateX(0) rotate(0); }
+    25%      { transform:translateX(12px) rotate(-10deg); }
+    50%      { transform:translateX(-6px) rotate(8deg); }
+    75%      { transform:translateX(7px) rotate(-5deg); }
+}
+
+/* ใกล้หลุมดำมากแล้ว ตัวสั่นเตือน */
+.run-pilot.is-danger .run-body { animation:run-float 1.6s ease-in-out infinite, run-shiver .35s linear infinite; }
+@keyframes run-shiver { 50% { margin-left:3px; } }
+
+/* โดนดูด = หมุนติ้วแล้วหดหายเข้าไปในหลุม */
+.run-pilot.is-gone { opacity:.45; filter:grayscale(1); }
+.run-pilot.is-gone .run-body { animation:run-suck 1.2s ease-in forwards; }
+.run-pilot.is-gone .run-jet { display:none; }
+@keyframes run-suck {
+    0%   { transform:rotate(0) scale(1); opacity:1; }
+    70%  { transform:rotate(540deg) scale(.4); opacity:.8; }
+    100% { transform:rotate(900deg) scale(.15); opacity:.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .run-stars, .run-hole, .run-body, .run-jet { animation:none; }
+}

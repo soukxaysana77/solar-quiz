@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th" data-i18n-title="game.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MangosGo Game</title>
+  <link rel="stylesheet" href="../shared/shared.css">
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <main class="game-card">
+    <div class="game-top">
+      <div id="me" class="player-chip"></div>
+      <div class="top-right">
+        <span id="mode-badge" class="mode-badge" hidden></span>
+        <div id="streak" class="streak" hidden></div>
+      </div>
+    </div>
+    <p id="progress"></p>
+    <div class="timer">
+      <div id="timer-track" class="timer-track"><div id="timer-fill" class="timer-fill"></div></div>
+      <p id="timer-label">--</p>
+    </div>
+    <img id="question-media" class="question-media" alt="Question media">
+    <h1 id="question" data-i18n="game.waitingQuestion">Waiting for question...</h1>
+    <div id="answers" class="answers"></div>
+    <p id="message"></p>
+  </main>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/sound.js"></script>
+  <script src="../shared/fullscreen.js"></script>
+  <script src="../shared/avatar.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

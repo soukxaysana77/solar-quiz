@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="th" data-i18n-title="host.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MangosGo Host</title>
+  <link rel="stylesheet" href="../shared/shared.css">
+  <link rel="stylesheet" href="host.css">
+</head>
+<body>
+  <main class="host-card">
+    <a class="back" href="../Make/make.html" data-i18n="host.back">← Back to editor</a>
+    <p class="eyebrow" data-i18n="common.gamePin">GAME PIN</p>
+    <h1 id="pin">------</h1>
+    <h2 id="title" data-i18n="host.loading">Loading game...</h2>
+    <p id="question-count"></p>
+    <div class="timer">
+      <div id="timer-track" class="timer-track is-hidden"><div id="timer-fill" class="timer-fill"></div></div>
+      <p id="timer-label">--</p>
+    </div>
+
+    <section id="play-view">
+      <img id="question-media" class="host-media" alt="">
+      <p id="question" class="host-question"></p>
+      <ul id="options" class="host-options"></ul>
+    </section>
+
+    <section id="run-view" hidden>
+      <p id="run-answer" class="run-answer"></p>
+      <div id="run-arena"></div>
+    </section>
+
+    <p id="answered"></p>
+
+    <section id="podium-view" hidden>
+      <div id="podium" class="podium"></div>
+      <ol id="runners-up" class="runners-up"></ol>
+    </section>
+
+    <section id="mode-view">
+      <p class="mode-heading" data-i18n="host.pickMode">เลือกโหมดเกม</p>
+      <div id="modes" class="mode-grid"></div>
+    </section>
+
+    <div class="host-controls">
+      <button id="start" class="start-btn" disabled data-i18n="host.start">Start game</button>
+    </div>
+    <ol id="scores"></ol>
+    <p id="player-count"></p>
+    <ul id="players"></ul>
+    <p id="message" role="status"></p>
+  </main>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/sound.js"></script>
+  <script src="../shared/fullscreen.js"></script>
+  <script src="../shared/avatar.js"></script>
+  <script src="../shared/run.js"></script>
+  <script src="../shared/preload.js"></script>
+  <script src="host.js"></script>
+</body>
+</html>

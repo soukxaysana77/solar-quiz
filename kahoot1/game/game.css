@@ -1,0 +1,48 @@
+* { box-sizing:border-box; }
+html { height:100%; }
+/* เต็มจอ: dvh กัน address bar บนมือถือมาเบียดจนปุ่มตอบล้นออกนอกจอ */
+body { min-height:100vh; min-height:100dvh; margin:0; font-family:Arial,sans-serif; background:linear-gradient(135deg,#46178f,#1368ce); color:#fff; }
+.game-card {
+    width:100%;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:12px clamp(12px,3vw,32px) 16px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    text-align:center;
+}
+.game-top { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:38px; padding-right:112px; }
+#progress { margin:0; }
+.streak { padding:6px 14px; border-radius:20px; background:#ff7a00; font-weight:800; }
+.question-media { display:none; width:min(100%,560px); max-height:26vh; margin:0 auto; object-fit:contain; border-radius:10px; background:#fff; box-shadow:0 5px 15px #0003; }
+.game-card h1 { margin:0; padding:clamp(14px,3vh,26px) 24px; border-radius:10px; background:#fff; color:#333; font-size:clamp(22px,4.5vw,42px); }
+.timer { font-size:26px; font-weight:900; color:#ffe500; }
+#timer-label { margin:0 0 10px; }
+/* เต้นเฉพาะตัวเลข ไม่ให้หลอดกระตุกตาม */
+.timer.is-urgent #timer-label { animation:pulse .5s ease-in-out infinite; }
+@keyframes pulse { 50% { transform:scale(1.18); color:#ff5b5b; } }
+/* ปุ่มตอบกินพื้นที่ที่เหลือทั้งหมด สูงเท่ากันทุกปุ่มไม่ว่าจอสูงแค่ไหน */
+.answers { flex:1 1 auto; display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:clamp(8px,1.5vh,14px); min-height:180px; }
+.answer { padding:16px; border:4px solid transparent; border-radius:8px; color:#fff; font-size:clamp(16px,2.4vw,24px); font-weight:700; cursor:pointer; transition:opacity .2s, transform .2s; }
+.answer:nth-child(1){background:#e21b3c}
+.answer:nth-child(2){background:#1368ce}
+.answer:nth-child(3){background:#d89e00}
+.answer:nth-child(4){background:#26890c}
+.answer.is-picked { border-color:#fff; }
+/* ล็อกคำตอบแล้วรอเฉลย ตัวที่ไม่ได้เลือกจางลง แต่ยังไม่บอกว่าใครถูก */
+.answer.is-waiting { opacity:.45; }
+.answer.is-correct { transform:scale(1.03); box-shadow:0 0 0 4px #fff inset; }
+.answer.is-dimmed { opacity:.3; }
+#message { min-height:24px; margin:0; font-size:18px; font-weight:700; }
+@media(max-width:600px){
+    .game-top{ padding-right:112px; }
+    .answer{ font-size:16px; }
+    /* จอแคบ ป้ายโหมดยาว ๆ จะเบียดปุ่มมุมขวา ย่อลงแต่ยังไม่ตัดบรรทัด */
+    .mode-badge{ padding:4px 9px; font-size:11px; }
+    #progress{ font-size:13px; }
+}
+.top-right { display:flex; align-items:center; gap:8px; }
+.mode-badge { padding:5px 13px; border-radius:20px; font-size:13px; font-weight:800; white-space:nowrap; }
+/* ตกรอบแล้วยังดูเกมต่อได้ แต่กดตอบไม่ได้ */
+.game-card.is-out .answers { opacity:.35; pointer-events:none; }

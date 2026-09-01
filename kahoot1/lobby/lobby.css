@@ -1,0 +1,81 @@
+* { box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at 75% 30%, #5d0f8d, #39035e 50%, #20003b);
+}
+.lobby-card {
+    width: min(100%, 520px);
+    padding: 42px 28px;
+    border-radius: 12px;
+    text-align: center;
+    background: rgba(255,255,255,.12);
+    box-shadow: 0 12px 30px rgba(0,0,0,.3);
+}
+.logo { font-size: clamp(38px, 10vw, 58px); font-weight: 900; font-style: italic; }
+.eyebrow { margin: 34px 0 4px; font-size: 13px; font-weight: 700; letter-spacing: 2px; }
+h1 { margin: 0; font-size: clamp(48px, 14vw, 84px); letter-spacing: 8px; }
+.status { margin: 20px auto 30px; max-width: 350px; line-height: 1.5; }
+.back-link { color: #fff; font-weight: 700; }
+#players { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0 24px; padding: 0; list-style: none; }
+
+.field-label { margin: 22px 0 8px; font-size: 13px; font-weight: 700; letter-spacing: 1px; opacity: .85; }
+.nickname-row { display: flex; gap: 8px; }
+#nickname {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+}
+#nickname:focus { outline: none; border-color: #ffe500; }
+.dice-btn {
+    flex: 0 0 54px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .2);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+}
+.dice-btn:hover { background: rgba(255, 255, 255, .32); }
+.avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.avatar-grid button {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    padding: 4px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .15);
+    cursor: pointer;
+}
+.avatar-grid svg { width: 100%; height: auto; }
+.avatar-grid button[aria-pressed="true"] { border-color: #ffe500; background: rgba(255, 229, 0, .25); }
+.enter-btn {
+    width: 100%;
+    margin-top: 22px;
+    padding: 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #26890c;
+    color: #fff;
+    font-size: 19px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.enter-btn:disabled { opacity: .55; cursor: not-allowed; }
+.join-error { min-height: 20px; margin: 12px 0 0; color: #ffd0d0; font-weight: 700; }
+
+#me { margin-bottom: 18px; font-size: 18px; }
+.preload-note { min-height: 20px; margin: 0 0 6px; font-size: 14px; opacity: .8; }

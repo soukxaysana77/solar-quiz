@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th" data-i18n-title="make.title">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="make.brand">MangosGo Creator Studio</title>
+    <link rel="stylesheet" href="make.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="logo-area">
+            <h1>Mangos<span>GO</span></h1>
+            <div class="title-input-container">
+                <input type="text" class="title-input" data-i18n="make.titlePlaceholder" data-i18n-attr="placeholder" placeholder="Enter quiz title...">
+                <button class="btn-settings" data-i18n="make.settings">Settings</button>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-upgrade">★ Upgrade</button>
+            <button class="btn-exit" data-i18n="make.exit">Exit</button>
+            <button class="btn-save" disabled data-i18n="make.save">Save</button>
+            <a class="host-link" hidden data-i18n="make.host">Host</a>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <div class="workspace">
+        
+        <!-- Left Sidebar -->
+        <aside class="left-sidebar">
+            <div class="slide-thumb">
+                <div class="slide-thumb-title">1 Quiz</div>
+                <div class="slide-thumb-preview">
+                    <span style="font-size: 10px; color: #aaa;" data-i18n="make.question">Question</span>
+                </div>
+            </div>
+            <button class="add-slide-btn" data-i18n="make.add">+ Add</button>
+            <button class="create-slide-btn" data-i18n="make.create">+ Create</button>
+        </aside>
+
+        <!-- Main Question Canvas -->
+        <main class="canvas-container">
+            <input type="text" class="question-input" data-i18n="make.questionPlaceholder" data-i18n-attr="placeholder" placeholder="Start typing your question">
+            
+            <div class="media-box">
+                <div class="media-tools">🎭 🎬 🔊</div>
+                <div class="media-icon">+</div>
+                <div class="media-text" data-i18n="make.findMedia">Find and insert media</div>
+                <div class="media-link"><u data-i18n="make.uploadFile">Upload file</u> or drag here to upload</div>
+            </div>
+
+            <div class="answers-grid">
+                <p class="correct-hint">คลิกการ์ดคำตอบเพื่อเลือกคำตอบที่ถูกต้อง <strong data-i18n="make.greenIsCorrect">กรอบเขียว = คำตอบถูก</strong></p>
+                <div class="answer-card">
+                    <div class="answer-shape red-shape" aria-label="Answer 1">▲</div>
+                    <input type="text" class="answer-input" data-i18n="make.answer1" data-i18n-attr="placeholder" placeholder="Add answer 1">
+                    <button class="answer-media-btn">🖼️</button>
+                </div>
+                <div class="answer-card">
+                    <div class="answer-shape blue-shape" aria-label="Answer 2">◆</div>
+                    <input type="text" class="answer-input" data-i18n="make.answer2" data-i18n-attr="placeholder" placeholder="Add answer 2">
+                    <button class="answer-media-btn">🖼️</button>
+                </div>
+                <div class="answer-card">
+                    <div class="answer-shape yellow-shape" aria-label="Answer 3">●</div>
+                    <input type="text" class="answer-input" data-i18n="make.answer3" data-i18n-attr="placeholder" placeholder="Add answer 3 (optional)">
+                    <button class="answer-media-btn">🖼️</button>
+                </div>
+                <div class="answer-card">
+                    <div class="answer-shape green-shape" aria-label="Answer 4">■</div>
+                    <input type="text" class="answer-input" data-i18n="make.answer4" data-i18n-attr="placeholder" placeholder="Add answer 4 (optional)">
+                    <button class="answer-media-btn">🖼️</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Properties Sidebar -->
+        <aside class="right-sidebar">
+            <div class="properties-content">
+                <div class="panel-header">
+                    <span data-i18n="make.properties">Question properties</span>
+                    <span style="cursor: pointer;">✕</span>
+                </div>
+
+                <div class="property-group">
+                    <div class="property-label" data-i18n="make.questionType">🔄 Question type</div>
+                    <select class="property-select">
+                        <option>Quiz</option>
+                        <option>True/False</option>
+                    </select>
+                </div>
+
+                <div class="property-group">
+                    <div class="property-label" data-i18n="make.timeLimit">⏱️ Time limit</div>
+                    <select class="property-select">
+                        <option>20 seconds</option>
+                        <option>10 seconds</option>
+                        <option>30 seconds</option>
+                        <option>60 seconds</option>
+                    </select>
+                    <a class="apply-all-link" data-i18n="make.applyAll">Apply to all questions</a>
+                </div>
+
+                <div class="property-group">
+                    <div class="property-label" data-i18n="make.points">🏅 Points</div>
+                    <select class="property-select">
+                        <option>Standard</option>
+                        <option>Double points</option>
+                        <option>No points</option>
+                    </select>
+                </div>
+
+                <div class="property-group">
+                    <div class="property-label" data-i18n="make.answerOptions">⠶ Answer options</div>
+                    <select class="property-select">
+                        <option>Single select</option>
+                        <option>Multi-select</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <button class="btn-action" data-i18n="make.delete">Delete</button>
+                <button class="btn-action" data-i18n="make.duplicate">Duplicate</button>
+            </div>
+        </aside>
+
+        <!-- Far Right Tool Navigation Bar -->
+        <div class="far-right-bar">
+            <button class="icon-btn">
+                <div class="icon-box">🎨</div>
+                <span data-i18n="make.themes">Themes</span>
+            </button>
+            <button class="icon-btn active">
+                <div class="icon-box">📊</div>
+                <span>Properties</span>
+            </button>
+        </div>
+
+    </div>
+    
+
+</body>
+<script src="../shared/i18n.js"></script>
+<script src="make.js"></script>
+</html>

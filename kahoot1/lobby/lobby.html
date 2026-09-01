@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th" data-i18n-title="lobby.title">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangosGo! Lobby</title>
+    <link rel="stylesheet" href="../shared/shared.css">
+    <link rel="stylesheet" href="lobby.css">
+</head>
+<body>
+    <main class="lobby-card">
+        <div class="logo">MangosGo!</div>
+        <p class="eyebrow" data-i18n="common.gamePin">GAME PIN</p>
+        <h1 id="pin">------</h1>
+
+        <section id="join-view">
+            <p class="field-label" data-i18n="lobby.nickname">ชื่อเล่นของคุณ</p>
+            <div class="nickname-row">
+                <input id="nickname" type="text" maxlength="40" autocomplete="off" data-i18n="lobby.nicknamePlaceholder" data-i18n-attr="placeholder" placeholder="ตั้งชื่อเลย">
+                <button id="dice" class="dice-btn" type="button" data-i18n="lobby.randomName" data-i18n-attr="title" title="สุ่มชื่อให้หน่อย">🎲</button>
+            </div>
+            <p class="field-label" data-i18n="lobby.pickAvatar">เลือกอวตาร</p>
+            <div id="avatars" class="avatar-grid"></div>
+            <button id="enter" class="enter-btn" type="button" data-i18n="lobby.enter">เข้าห้อง</button>
+            <p id="join-error" class="join-error" role="alert"></p>
+        </section>
+
+        <section id="wait-view" hidden>
+            <p class="status" data-i18n="lobby.waiting">อยู่ในห้องแล้ว รอ host กดเริ่มเกม...</p>
+            <div id="me" class="player-chip kg-pop"></div>
+            <p id="preload" class="preload-note"></p>
+            <p id="player-count"></p>
+            <ul id="players"></ul>
+        </section>
+
+        <a class="back-link" href="../page/" data-i18n="lobby.leave">Leave game</a>
+    </main>
+    <script src="../shared/i18n.js"></script>
+    <script src="../shared/sound.js"></script>
+    <script src="../shared/avatar.js"></script>
+    <script src="../shared/preload.js"></script>
+    <script src="../shared/nickname.js"></script>
+    <script src="lobby.js"></script>
+</body>
+</html>
