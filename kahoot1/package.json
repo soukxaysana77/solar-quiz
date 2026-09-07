@@ -1,0 +1,16 @@
+{
+  "name": "mangosgo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MangosGo realtime quiz game",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "ws": "^8.21.3"
+  }
+}
