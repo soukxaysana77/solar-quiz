@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="th" data-i18n-title="dash.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MangosGo Dashboard</title>
+  <link rel="stylesheet" href="../shared/shared.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <main class="dash">
+    <header class="dash-head">
+      <div class="logo">MangosGo!</div>
+      <p id="hello" class="hello"></p>
+      <p id="subtitle" class="subtitle"></p>
+    </header>
+
+    <div id="actions" class="actions"></div>
+    <div id="stats" class="stat-row"></div>
+
+    <section id="panels" class="panels">
+      <p id="loading" class="empty" data-i18n="dash.loading">Loading...</p>
+    </section>
+  </main>
+
+  <!-- รายงานของรอบเดียว เปิดทับหน้าเดิม ไม่ต้องเปลี่ยนหน้า -->
+  <div id="report" class="report-back" hidden>
+    <div class="report-card" role="dialog" aria-modal="true">
+      <button id="report-close" class="report-close" type="button" data-i18n="dash.close" data-i18n-stable>Close</button>
+      <h2 id="report-title"></h2>
+      <p id="report-meta" class="report-meta"></p>
+      <div id="report-body"></div>
+    </div>
+  </div>
+
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/auth.js"></script>
+  <script src="../shared/avatar.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

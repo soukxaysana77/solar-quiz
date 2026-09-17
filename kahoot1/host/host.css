@@ -1,0 +1,560 @@
+* { box-sizing: border-box; }
+body { min-height:100vh; min-height:100dvh; margin:0; font-family:Arial,sans-serif; color:#fff; 
+    /* background:radial-gradient(circle at 75% 30%,#5d0f8d,#20003b);  */
+background:#111111;
+}
+/* จอ host มักฉายขึ้นโปรเจกเตอร์ ให้กินเต็มจอไปเลย ไม่ต้องเป็นการ์ดลอย
+   ใช้ flex column เพื่อให้ช่วงเล่นดันตัวเกมกินพื้นที่ที่เหลือทั้งหมดโดยไม่ต้องเลื่อนจอ */
+.host-card {
+    width:100%;
+    min-height:100vh;
+    min-height:100dvh;
+    margin:0;
+    /* เว้นด้านบนให้พ้นแถบปุ่มมุมขวา ไม่งั้น GAME PIN ไปชนปุ่ม */
+    padding:calc(var(--tools-h) + 16px) clamp(12px,3vw,40px) 20px;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    gap:clamp(6px,1.2vh,12px);
+    text-align:center;
+}
+/* วางลอยมุมซ้ายบนแทน float จะได้ไม่ต้องเผื่อ padding-top ให้บรรทัดถัดไป */
+/* จอแคบมาก ข้อความจะยาวไปชนแถบปุ่มมุมขวาบน จำกัดความกว้างแล้วตัดด้วย ... แทน */
+.back { position:absolute; top:16px; left:clamp(12px,3vw,40px); max-width:calc(100% - var(--tools-w) - 40px);
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; font-weight:700; text-decoration:none; }
+.eyebrow { margin:0; font-size:13px; letter-spacing:2px; font-weight:700; }
+h1 { margin:0; font-size:clamp(40px,8vw,80px); letter-spacing:8px; }
+h2 { margin:2px 0 0; font-size:clamp(18px,3.4vw,28px); }
+#question-count { opacity:.85; }
+/* ตัวอักษรย่อตามความกว้างจอ ที่ 32px ตายตัวคำว่า "Waiting for players" ตัดเป็นสองบรรทัดบนมือถือ
+   แล้วพอสลับภาษาไป-มา ทุกอย่างข้างล่างจะกระโดดขึ้นลงทีละ 45px */
+.timer { font-size:clamp(20px,5.5vw,32px); font-weight:900; color:#ffe500; }
+/* จองความสูงหนึ่งบรรทัดไว้ ข้อความในหลอดเวลาเปลี่ยนไปมาระหว่าง "รอผู้เล่น" กับตัวเลขวินาที */
+#timer-label { margin:0 0 10px; min-height:1.25em; line-height:1.25; }
+.start-btn { margin-top:4px; padding:14px 34px; border:0; border-radius:7px; color:#fff; background:#26890c; font-size:18px; font-weight:700; cursor:pointer; }
+.start-btn:disabled { opacity:.55; cursor:not-allowed; }
+/* margin-bottom เริ่มต้นของ <p> อีก 16px ดันการ์ดให้สูงเกินจอจนมีแถบเลื่อน
+   ตัวสุดท้ายของการ์ดแล้ว ไม่ต้องเว้นล่าง */
+#message { min-height:20px; margin-bottom:0; font-weight:700; }
+#scores { max-width:300px; margin:25px auto 0; text-align:left; line-height:1.8; }
+.host-question { margin:0; font-size:clamp(18px,4vw,26px); font-weight:700; }
+.host-options { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0; padding:0; list-style:none; }
+.host-options li {
+    display:grid; place-items:center;
+    padding:12px;
+    border:4px solid transparent;
+    border-radius:8px;
+    font-weight:700;
+    transition:opacity .3s ease, transform .3s ease;
+}
+/* สีเดียวกับปุ่มบนจอผู้เล่น ผู้เล่นจะได้เทียบตำแหน่งกับจอใหญ่ได้ */
+.host-options li:nth-child(1){ background:#e21b3c; }
+.host-options li:nth-child(2){ background:#1368ce; }
+.host-options li:nth-child(3){ background:#d89e00; }
+.host-options li:nth-child(4){ background:#26890c; }
+.host-options li.correct { border-color:#fff; transform:scale(1.03); }
+.host-options li.dimmed { opacity:.3; }
+#answered { min-height:20px; opacity:.85; }
+.host-controls { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+/* เต้นเฉพาะตัวเลข ไม่ให้หลอดกระตุกตาม */
+.timer.is-urgent #timer-label { animation:host-pulse .5s ease-in-out infinite; }
+@keyframes host-pulse { 50% { transform:scale(1.15); color:#ff5b5b; } }
+
+/* แท่นรับรางวัล: แต่ละแท่นโผล่ขึ้นทีละอัน เริ่มจากที่ 3 ไล่ไปที่ 1 */
+.podium { display:flex; align-items:flex-end; justify-content:center; gap:10px; margin:24px 0 18px; }
+/* สถานะตั้งต้นต้อง "มองเห็น" แล้วใช้ animation-fill-mode: both ซ่อนเฉพาะช่วงรอคิว
+   ถ้าตั้งต้นเป็น opacity:0 แล้วแอนิเมชันไม่ทำงานด้วยเหตุใดก็ตาม แท่นจะหายทั้งอัน */
+/* ใช้ backwards ไม่ใช่ both: ระหว่างรอคิวซ่อนไว้ (ได้เอฟเฟกต์ทยอยโผล่)
+   แต่พอจบแอนิเมชันกลับไปใช้สไตล์ปกติซึ่งมองเห็นอยู่แล้ว
+   ถ้าใช้ forwards/both แล้วแอนิเมชันไม่ทำงาน แท่นจะค้างอยู่ในสถานะซ่อนถาวร */
+.podium-slot { flex:1; max-width:150px; animation:podium-rise .5s ease-out backwards; }
+@keyframes podium-rise { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+.podium-avatar { display:grid; place-items:center; line-height:0; }
+.score-row { display:flex; align-items:center; gap:8px; }
+.score-rank { min-width:22px; text-align:right; opacity:.8; }
+#scores { max-width:340px; margin:0 auto; padding:0; list-style:none; }
+.podium-name { margin:4px 0 6px; font-weight:700; overflow-wrap:anywhere; }
+.podium-step { display:grid; place-items:center; border-radius:8px 8px 0 0; background:rgba(255,255,255,.2); font-size:30px; }
+.place-1 .podium-step { height:120px; background:linear-gradient(#ffe500,#e0a800); }
+.place-2 .podium-step { height:88px; background:linear-gradient(#e6e6e6,#a9a9a9); }
+.place-3 .podium-step { height:64px; background:linear-gradient(#e0a370,#b4713c); }
+.podium-score { padding:6px 0; background:rgba(0,0,0,.25); border-radius:0 0 8px 8px; font-weight:900; }
+.runners-up { max-width:320px; margin:0 auto; text-align:left; line-height:1.8; }
+/* จอมือถือ: ย่อแท่นลงไม่ให้ล้นออกนอกพื้นที่แล้วไปทับป้ายโหมดข้างล่าง */
+@media (max-width:600px) {
+    .podium { gap:6px; margin:14px 0 10px; }
+    .place-1 .podium-step { height:78px; }
+    .place-2 .podium-step { height:60px; }
+    .place-3 .podium-step { height:46px; }
+    .podium-name { font-size:13px; }
+    body.is-final #podium-view { min-height:0; overflow:auto; }
+}
+#players { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; padding:0; list-style:none; }
+#players li { padding:6px 12px; border-radius:20px; background:rgba(255,255,255,.18); font-weight:700; }
+@media(max-width:600px){ .host-options { grid-template-columns:1fr; } }
+/* การ์ดเลือกโหมด โชว์เฉพาะตอนอยู่ล็อบบี้ */
+.mode-heading { margin:8px 0 6px; font-size:13px; font-weight:700; letter-spacing:2px; opacity:.85; }
+.mode-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+.mode-card {
+    /* การ์ดซ้อนข้อความสองภาษาไว้แล้ว ความสูงคงที่อยู่ ไม่ต้องล็อก line-height ให้หน้าตาเปลี่ยน */
+    line-height:normal;
+    position:relative;
+    padding:clamp(9px,1.4vh,15px) 10px;
+    border:3px solid transparent;
+    border-radius:12px;
+    color:#fff;
+    text-align:center;
+    cursor:pointer;
+    font:inherit;
+    /* สีของแต่ละโหมดถูกเซ็ตเป็น inline style จากค่าที่เซิร์ฟเวอร์ส่งมา */
+    box-shadow:0 6px 16px #0004;
+    transition:transform .15s ease, box-shadow .15s ease;
+}
+.mode-card:hover { transform:translateY(-3px); box-shadow:0 10px 22px #0006; }
+.mode-card[aria-pressed="true"] { border-color:#ffe500; transform:translateY(-3px); }
+.mode-card[aria-pressed="true"]::after {
+    content:'✓';
+    position:absolute; top:6px; right:10px;
+    font-size:16px; font-weight:900; color:#ffe500;
+}
+.mode-icon { font-size:clamp(22px,3vh,30px); line-height:1; }
+.mode-name { margin:4px 0 3px; font-size:clamp(14px,1.4vw,17px); font-weight:800; }
+.mode-desc { font-size:11px; line-height:1.4; opacity:.92; }
+
+/* ล็อบบี้ต้องพอดีจอ ไม่ต้องเลื่อนหาปุ่ม Start — รายชื่อผู้เล่นเป็นส่วนที่ยอมให้เลื่อนแทน */
+#players { max-height:24vh; overflow:auto; margin:0 auto; }
+#scores:empty { display:none; }
+/* ยังไม่เริ่มเกมก็ไม่ต้องกันที่ให้ช่องคำถามที่ว่างอยู่ */
+body:not(.is-playing) #play-view { display:none; }
+
+.mode-badge { display:inline-block; margin:8px 0 0; padding:5px 14px; border-radius:20px; font-size:14px; font-weight:800; }
+
+/* ===============================
+   ช่วงกำลังเล่น = จอเกมเต็มจอ
+   =============================== */
+/* ของที่จำเป็นเฉพาะตอนรอผู้เล่น ซ่อนทิ้งตอนเล่นจริงเพื่อคืนพื้นที่ให้ตัวเกม */
+body.is-playing .back,
+/* ล็อกความสูงบรรทัดของข้อความที่แปลได้ทุกตัวบนการ์ดนี้
+   การ์ดจัดกลางแนวตั้ง ถ้าแต่ละบรรทัดสูงไม่เท่ากันระหว่างไทย/อังกฤษ ความต่างจะทบกัน
+   จนปุ่มเริ่มเกมกระโดดได้เป็นสิบพิกเซลตอนสลับภาษา */
+#player-count, #question-count, #answered, .back, .mode-heading, #title { line-height:1.3; }
+
+body.is-playing .eyebrow,
+body.is-playing #title,
+body.is-playing #player-count,
+body.is-playing #players,
+body.is-playing .host-controls { display:none; }
+
+/* QR ให้สแกนเข้าห้อง โชว์เฉพาะตอนรออยู่ในล็อบบี้ พอเริ่มเล่นแล้วเก็บทิ้งเอาที่ให้ตัวเกม
+   (คนมาสายยังพิมพ์ PIN ที่ยังค้างอยู่หัวจอเข้าเล่นได้อยู่) */
+.qr-box { display:flex; flex-direction:column; align-items:center; gap:6px; margin:4px 0 2px; }
+.qr-code { display:flex; padding:8px; border-radius:12px; background:#fff; line-height:0; }
+.qr-code svg { width:clamp(120px,17vh,220px); height:auto; }
+.qr-hint { margin:0; font-size:clamp(12px,1.3vw,15px); font-weight:700; opacity:.85; line-height:1.3; }
+body.is-playing .qr-box,
+body.is-final .qr-box { display:none; }
+
+/* PIN ยังต้องเห็นอยู่เผื่อคนเข้าห้องช้าหรือหลุดแล้วต่อกลับ แต่ย่อลงให้เหลือแค่บรรทัดเดียว */
+body.is-playing #pin {
+    margin:0;
+    font-size:clamp(15px,1.8vw,22px);
+    letter-spacing:4px;
+    opacity:.7;
+}
+body.is-playing #question-count { margin:0; font-size:clamp(13px,1.4vw,16px); }
+body.is-playing .timer { font-size:clamp(20px,2.4vw,30px); line-height:1.1; }
+body.is-playing #timer-label { margin:2px 0 0; }
+body.is-playing .timer-track { margin-bottom:0; }
+body.is-playing .mode-badge { margin:0; }
+
+/* ช่วงเล่นล็อกความสูงการ์ดเท่าจอพอดี (ไม่ใช่แค่ min-height)
+   ไม่งั้นการ์ดจะยืดตามเนื้อหาแล้วหน้าเลื่อน แทนที่จะบีบให้รูปย่อลงมาพอดีจอ */
+body.is-playing .host-card { height:100vh; height:100dvh; }
+body.is-playing #play-view {
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    gap:clamp(8px,1.4vh,16px);
+    min-height:0;
+}
+/* รูปประกอบคำถาม — จอใหญ่คือที่ที่ทุกคนดูรูป
+   สูงได้ไม่เกิน 34% ของจอ เพื่อไม่ให้ไปเบียดช่องตัวเลือกจนเตี้ย */
+.host-media {
+    display:none;
+    width:auto;
+    max-width:min(100%,720px);
+    max-height:56vh;
+    margin:0 auto;
+    /* ต้องมี min-height:0 ไม่งั้นรูปย่อไม่ได้ (replaced element มี min-height:auto = ขนาดรูปจริง)
+       แล้วมันจะไปเบียดช่องตัวเลือกจนเตี้ยและดันหน้าให้เลื่อน */
+    flex:0 1 auto;
+    min-height:0;
+    object-fit:contain;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 6px 18px #0005;
+}
+body.is-playing .host-question {
+    padding:clamp(10px,2vh,22px) 20px;
+    border-radius:12px;
+    background:rgba(255,255,255,.12);
+    font-size:clamp(22px,3.2vw,44px);
+}
+/* ช่องตัวเลือกยืดเต็มพื้นที่ที่เหลือ สูงเท่ากันทุกช่องไม่ว่าจอสูงแค่ไหน */
+body.is-playing .host-options {
+    flex:1 1 auto;
+    grid-auto-rows:1fr;
+    gap:clamp(8px,1.4vh,14px);
+    min-height:100px;
+    font-size:clamp(16px,2vw,28px);
+}
+/* ข้อที่มีรูป: รูปเป็นตัวยืดกินพื้นที่ที่เหลือ ส่วนคำถามกับช่องตัวเลือกเตี้ยลงพอดีอ่าน
+   (บนจอ host ตัวเลือกไม่ต้องใหญ่ เพราะคนกดจากมือถือตัวเอง ไม่ได้กดจากจอนี้) */
+body.is-playing #play-view:has(#question-media[style*="block"]) .host-question {
+    padding:clamp(5px,1vh,12px) 20px;
+    font-size:clamp(18px,2.4vw,32px);
+}
+body.is-playing #play-view:has(#question-media[style*="block"]) .host-media {
+    flex:1 1 auto;
+}
+body.is-playing #play-view:has(#question-media[style*="block"]) .host-options {
+    flex:0 0 auto;
+    grid-auto-rows:minmax(clamp(44px,7vh,72px), auto);
+    min-height:0;
+    font-size:clamp(14px,1.7vw,22px);
+}
+body.is-playing #answered { font-size:clamp(14px,1.6vw,20px); }
+
+/* ช่วงกำลังถาม: เหลือแค่คำถามกับตัวเลือก ตารางคะแนนไปโผล่ตอนเฉลย
+   ไม่งั้นตัวเกมจะได้พื้นที่ไม่ถึงครึ่งจอ */
+body.is-question #scores,
+body.is-question #message { display:none; }
+
+/* ตอนเฉลยค่อยโชว์อันดับ แต่จำกัดความสูงไม่ให้เบียดคำถาม */
+body.is-reveal #scores { max-height:26vh; overflow:auto; margin:0 auto; font-size:clamp(13px,1.5vw,18px); }
+/* โหมดหลุมดำ: ตัวเวทีบอกอันดับอยู่แล้ว (ใครอยู่ขวาสุดคือนำ) ตารางคะแนนเลยไม่ต้องมี
+   คืนพื้นที่ทั้งหมดให้ฉากไล่ล่าเหมือน Robot Run ที่จอใหญ่มีแต่ฉาก */
+body.is-reveal.is-run #scores { display:none; }
+body.is-playing #message { font-size:clamp(14px,1.6vw,20px); }
+
+/* โหมดหลุมดำ: จอใหญ่ไม่ต้องขึ้นคำถามเลย โชว์ฉากไล่ล่าอย่างเดียวตั้งแต่เริ่มถามยันเฉลย
+   (คำถามกับตัวเลือกอยู่บนมือถือผู้เล่นอยู่แล้ว) */
+body.is-run.is-playing #play-view { display:none; }
+body.is-run.is-playing #run-view {
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-height:0;
+}
+body.is-run.is-playing #run-arena { flex:1 1 auto; min-height:0; display:flex; }
+/* ยังไม่เฉลยก็ยังไม่มีอะไรจะบอก กันที่ไว้ไม่ให้ฉากกระตุกตอนข้อความโผล่ */
+body.is-run.is-question .run-answer { visibility:hidden; }
+.run-answer { margin:0; font-size:clamp(15px,1.9vw,24px); font-weight:800; }
+.run-answer .run-correct { color:#7ef29d; }
+
+/* โหมดแท่นคำตอบ: เหมือนหลุมดำเป๊ะ จอใหญ่โชว์ฉากแท่นอย่างเดียว ไม่ขึ้นคำถาม (คำถามอยู่บนมือถือผู้เล่น) */
+body.is-blocks.is-playing #play-view { display:none; }
+body.is-reveal.is-blocks #scores { display:none; }
+body.is-blocks.is-playing #blocks-view {
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+}
+body.is-blocks.is-playing #blocks-arena { flex:1 1 auto; min-height:0; display:flex; }
+
+/* เฉลยคำตอบถูกไปวางบนพื้นที่ว่างเหนือเวที (จอใหญ่ไม่ได้โชว์ตัวเลือก คนดูเลยต้องมีอะไรผูกสีแท่นกับคำตอบ)
+   ระหว่างยังไม่หมดเวลาต้องซ่อนด้วย visibility ไม่ใช่ display จะได้ไม่ทำให้เวทีขยับตอนเฉลย */
+.blocks-answer { margin:0 0 8px; min-height:1.4em; font-size:clamp(15px,1.9vw,24px); font-weight:800; }
+.blocks-answer .blocks-correct { color:#7ef29d; }
+body.is-blocks.is-question .blocks-answer { visibility:hidden; }
+body.is-blocks.is-playing #blocks-answer { flex:0 0 auto; }
+
+/* โหมดบอสรวมพลัง: รูปแบบเดียวกับแท่นคำตอบ จอใหญ่โชว์ฉากบอสแทนคำถาม */
+body.is-boss.is-playing #play-view { display:none; }
+body.is-reveal.is-boss #scores { display:none; }
+body.is-boss.is-playing #boss-view { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+body.is-boss.is-playing #boss-arena { flex:1 1 auto; min-height:0; display:flex; }
+.boss-answer { margin:0 0 8px; min-height:1.4em; font-size:clamp(15px,1.9vw,24px); font-weight:800; }
+.boss-answer .boss-correct { color:#7ef29d; }
+body.is-boss.is-question .boss-answer { visibility:hidden; }
+body.is-boss.is-playing #boss-answer { flex:0 0 auto; }
+
+/* โหมดต่อตึก: รูปแบบเดียวกับบอส จอใหญ่โชว์ฉากตึก 3D แทนคำถาม (ถ้าโหลดฉากไม่ได้ host.js ถอดคลาสทิ้ง กลับไปหน้าคำถามปกติ) */
+body.is-tower.is-playing #play-view { display:none; }
+body.is-reveal.is-tower #scores { display:none; }
+body.is-tower.is-playing #tower-view { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+body.is-tower.is-playing #tower-arena { flex:1 1 auto; min-height:0; display:flex; }
+.tower-answer { margin:0 0 8px; min-height:1.4em; font-size:clamp(15px,1.9vw,24px); font-weight:800; }
+.tower-answer .tower-correct { color:#7ef29d; }
+body.is-tower.is-question .tower-answer { visibility:hidden; }
+body.is-tower.is-playing #tower-answer { flex:0 0 auto; }
+
+/* canvas ของ three.js เต็มกล่อง ป้ายชื่อเป็น HTML ลอยทับ (tower3d.js คำนวณตำแหน่งให้ทุกเฟรม) */
+.tower-stage {
+    position:relative; width:100%; flex:1 1 auto; min-height:clamp(320px,58vh,720px);
+    border-radius:16px; overflow:hidden; background:#bfe3ff;
+}
+.tower-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+.tower-labels { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.tower-label {
+    position:absolute; left:0; top:0; display:flex; flex-direction:column; align-items:center; gap:2px;
+    white-space:nowrap; will-change:transform;
+}
+.tower-name {
+    padding:2px 8px; border-radius:999px; background:rgba(0,0,0,.62); color:#fff;
+    font-weight:800; font-size:clamp(11px,1.2vw,16px);
+}
+.tower-gain {
+    padding:1px 7px; border-radius:999px; background:#16a34a; color:#fff;
+    font-weight:900; font-size:clamp(11px,1.2vw,15px);
+    opacity:0; transform:translateY(6px) scale(.8); transition:opacity .25s, transform .25s;
+}
+.tower-gain.is-shown { opacity:1; transform:none; }
+@media (prefers-reduced-motion: reduce) {
+    .tower-gain { transition:none; }
+}
+
+/* ฉากบอสแบบปราสาท: ทุกชิ้นวางแบบ absolute ซ้อนกันเป็นชั้น
+   ชั้นหลังสุด = ผนังปราสาทมืด → เสาอิฐสองข้าง → ประกายไฟ → หน้าบอสยักษ์ → HUD / ผู้เล่น / สะพาน */
+.boss-arena {
+    position:relative; width:100%; flex:1 1 auto; min-height:clamp(320px,58vh,720px);
+    border-radius:16px; overflow:hidden; isolation:isolate;
+    background:
+        radial-gradient(70% 55% at 50% 42%, rgba(255,120,40,.28) 0%, transparent 70%),
+        radial-gradient(120% 40% at 50% 100%, rgba(255,80,0,.35) 0%, transparent 60%),
+        linear-gradient(180deg, #1c120d 0%, #33221a 55%, #1a0f0a 100%);
+}
+
+.boss-pillar {
+    position:absolute; top:0; bottom:0; width:clamp(26px,5%,64px); z-index:1;
+    background:
+        repeating-linear-gradient(0deg, transparent 0 22px, rgba(0,0,0,.55) 22px 25px),
+        repeating-linear-gradient(90deg, transparent 0 18px, rgba(0,0,0,.35) 18px 20px),
+        linear-gradient(90deg, #6b5a63, #a3919a 50%, #5d4c55);
+    box-shadow:0 0 18px rgba(0,0,0,.7);
+}
+.boss-pillar.is-left { left:0; }
+.boss-pillar.is-right { right:0; }
+
+.boss-embers { position:absolute; inset:0; z-index:2; pointer-events:none; }
+.boss-ember {
+    position:absolute; bottom:-10px; width:5px; height:5px; border-radius:50%;
+    background:#ff9a3c; box-shadow:0 0 6px 2px rgba(255,120,40,.8);
+    animation:boss-ember 3.6s linear infinite;
+}
+@keyframes boss-ember {
+    0% { transform:translate(0,0); opacity:0; }
+    15% { opacity:1; }
+    100% { transform:translate(18px,-520px); opacity:0; }
+}
+
+/* บอสทั้งตัว (หัว + ลำตัว + มือ) คุมขนาดด้วย "ความสูงของเวที" ไม่ใช่ความกว้าง
+   ให้รูปสูง 125% ของเวที: หัวกินราว 60% บนของเวที มืออยู่ระดับเหนือสะพาน ส่วนล่างของตัวเลยขอบเวทีไป (ถูกตัดทิ้ง)
+   กว้างไม่เกิน 94% บนเวทีแคบ svg ย่อลงเองโดยคงสัดส่วนและชิดบน (preserveAspectRatio xMidYMin)
+   (ไม่ใช้ container query units เพราะเบราว์เซอร์รุ่นเก่าไม่รู้จัก ทิ้งค่านี้แล้วบอสยุบเหลือ 0) */
+/* ต้องบอกสัดส่วนกล่องตรง ๆ (400:320 เท่ากับ viewBox) ไม่งั้นกล่องที่วางด้วย left:50% จะได้ที่กว้างแค่ครึ่งเวที
+   บอสทั้งตัวเลยถูกย่อจนหัวเล็กนิดเดียว ตอนนี้ความกว้างมาจากความสูง แล้วค่อยถูกจำกัดที่ 94% ของเวที */
+.boss-face {
+    position:absolute; left:50%; top:2%; z-index:3;
+    height:125%; aspect-ratio:400 / 320; max-width:94%; transform:translateX(-50%);
+    filter:drop-shadow(0 10px 30px rgba(0,0,0,.7));
+    animation:boss-breathe 3s ease-in-out infinite;
+}
+.boss-face svg { display:block; width:100%; height:100%; }
+
+/* มือบอส: ปกติแกว่งสลับกันช้า ๆ / โดนตีกระตุกขึ้น / สวนกลับยกขึ้นแล้วตบลงสะพาน
+   --dir กลับทิศการหมุนของมือขวา มือสองข้างจะได้เคลื่อนแบบกระจกเงา */
+.boss-hand { transform-box:fill-box; transform-origin:50% 100%; animation:boss-hand-idle 2.6s ease-in-out infinite; }
+.boss-hand.is-left { --dir:1; }
+.boss-hand.is-right { --dir:-1; animation-delay:-1.3s; }
+@keyframes boss-hand-idle {
+    0%,100% { transform:translateY(0) rotate(0deg); }
+    50% { transform:translateY(-6%) rotate(calc(var(--dir) * -6deg)); }
+}
+@keyframes boss-flinch {
+    0%,100% { transform:translateY(0) rotate(0deg); }
+    50% { transform:translateY(-14%) rotate(calc(var(--dir) * 18deg)); }
+}
+@keyframes boss-slam {
+    0%,100% { transform:translateY(0) rotate(0deg); }
+    40% { transform:translateY(-22%) rotate(calc(var(--dir) * -20deg)); }
+    62% { transform:translateY(24%) rotate(calc(var(--dir) * 10deg)); }
+}
+.boss-face.is-hit .boss-hand { animation:boss-flinch .45s ease-in-out .35s 2; }
+.boss-face.is-counter .boss-hand { animation:boss-slam .8s ease-in .6s; }
+.boss-face.is-hit.then-counter .boss-hand { animation:boss-flinch .45s ease-in-out .35s 2, boss-slam .8s ease-in 1.4s; }
+.boss-eye { animation:boss-glow 1.6s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+@keyframes boss-glow { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.8); } }
+@keyframes boss-breathe { 0%,100% { transform:translateX(-50%) scale(1); } 50% { transform:translateX(-50%) scale(1.025); } }
+
+.boss-face.is-hit { animation:boss-hit .45s ease-in-out .35s 2; }
+.boss-face.is-hit.then-counter { animation:boss-hit .45s ease-in-out .35s 2, boss-counter .8s ease-in-out 1.4s; }
+@keyframes boss-hit {
+    0%,100% { transform:translateX(-50%); filter:drop-shadow(0 10px 30px rgba(0,0,0,.7)); }
+    25% { transform:translateX(calc(-50% - 16px)); filter:brightness(2.2) saturate(.4); }
+    75% { transform:translateX(calc(-50% + 16px)); filter:brightness(2.2) saturate(.4); }
+}
+.boss-face.is-counter { animation:boss-counter .8s ease-in-out .6s; }
+/* บอสสวนกลับ = พุ่งหน้าเข้าหาผู้เล่น */
+@keyframes boss-counter {
+    0%,100% { transform:translateX(-50%) scale(1); }
+    45% { transform:translateX(-50%) translateY(8%) scale(1.22); filter:brightness(1.3) hue-rotate(-20deg); }
+}
+.boss-face.is-defeated { animation:boss-defeated 1.6s ease-in .5s forwards; }
+@keyframes boss-defeated {
+    0% { transform:translateX(-50%); }
+    20% { transform:translateX(-50%) rotate(-6deg); filter:brightness(2); }
+    100% { transform:translateX(-50%) translateY(70%) rotate(18deg) scale(.6); opacity:0; }
+}
+
+.boss-damage {
+    position:absolute; top:18%; left:50%; z-index:6; pointer-events:none;
+    font-size:clamp(34px,5vw,72px); font-weight:900; color:#fde047;
+    -webkit-text-stroke:3px #000; text-shadow:0 5px 0 #000;
+    animation:boss-damage 1.5s ease-out .35s both;
+}
+@keyframes boss-damage {
+    from { opacity:0; transform:translate(-50%,24px) scale(.5); }
+    30% { opacity:1; transform:translate(-50%,0) scale(1.15); }
+    to { opacity:0; transform:translate(-50%,-50px) scale(1); }
+}
+
+/* HUD มุมบนแบบเกมแพลตฟอร์ม: ตัวอักษรหนาขอบดำ อ่านออกบนฉากมืด */
+.boss-hud {
+    position:absolute; top:10px; left:calc(clamp(26px,5%,64px) + 10px); right:calc(clamp(26px,5%,64px) + 10px); z-index:5;
+    display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+}
+.boss-hearts { display:flex; gap:4px; font-size:clamp(22px,3vw,40px); line-height:1; filter:drop-shadow(0 3px 0 #000); }
+.boss-heart.is-breaking { animation:boss-heart-break .8s ease-in 1.5s forwards; }
+@keyframes boss-heart-break {
+    0% { transform:scale(1); }
+    30% { transform:scale(1.6); }
+    100% { transform:scale(.7); opacity:.35; filter:grayscale(1); }
+}
+.boss-hp { display:flex; flex-direction:column; align-items:flex-end; gap:4px; width:clamp(140px,26%,340px); }
+.boss-hp-label {
+    font-size:clamp(20px,2.8vw,38px); font-weight:900; line-height:1; color:#fff;
+    -webkit-text-stroke:2px #000; text-shadow:0 3px 0 #000; white-space:nowrap;
+}
+.boss-hp-track { width:100%; height:clamp(12px,1.8vh,20px); border:3px solid #000; border-radius:999px; background:rgba(0,0,0,.6); overflow:hidden; }
+.boss-hp-fill { height:100%; width:var(--to); background:linear-gradient(90deg,#dc2626,#f97316,#facc15); animation:boss-hp .9s ease-out .35s both; }
+@keyframes boss-hp { from { width:var(--from); } to { width:var(--to); } }
+
+/* สะพานแดงส้มขอบเหลืองพาดทั้งฉาก ผู้เล่นยืนเรียงอยู่บนสะพานฝั่งซ้ายแบบตัวเอกเผชิญหน้าบอส */
+.boss-bridge {
+    position:absolute; left:0; right:0; bottom:clamp(14px,4%,40px); z-index:4; height:clamp(14px,2.4vh,24px);
+    background:
+        repeating-linear-gradient(90deg, #fcd34d 0 10px, #b45309 10px 12px) bottom / 100% 35% no-repeat,
+        linear-gradient(180deg, #ff5a1f, #d9360b);
+    border-top:3px solid #7c1d05; box-shadow:0 6px 16px rgba(0,0,0,.6);
+}
+/* ผู้เล่นยืนแถวเดียวบนสะพานเสมอ ห้ามตัดขึ้นแถวใหม่ (แถวสองจะไปบังหน้าบอส)
+   ที่ไม่พอให้ช่องของแต่ละคนหดลงได้ถึง 6px ตัวอวตาร 40px ล้นออกไปทับคนข้าง ๆ = เบียดกันเป็นกลุ่ม */
+.boss-team {
+    position:absolute; z-index:5;
+    left:calc(clamp(26px,5%,64px) + 3%); right:calc(clamp(26px,5%,64px) + 3%);
+    bottom:calc(clamp(14px,4%,40px) + clamp(14px,2.4vh,24px));
+    display:flex; flex-wrap:nowrap; align-items:flex-end;
+}
+.boss-fighter { flex:0 1 56px; min-width:6px; display:flex; flex-direction:column; align-items:center; }
+.boss-fighter .avatar { flex:none; }
+.boss-fighter .avatar { filter:drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
+.boss-fighter.is-attacking .avatar { animation:boss-attack .7s cubic-bezier(.3,.6,.4,1); }
+@keyframes boss-attack {
+    0%,100% { transform:translate(0,0); }
+    45% { transform:translate(14px,-46px) rotate(12deg) scale(1.15); }
+}
+.boss-fighter.is-idle { opacity:.5; filter:grayscale(.6); }
+/* ชื่อกว้างไม่เกินช่องของตัวเอง ตอนเบียดกันชื่อจะถูกตัดเป็น … แทนการซ้อนทับจนอ่านไม่ออก */
+.boss-name {
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font-size:clamp(9px,1vw,12px); font-weight:800; color:#fff; text-shadow:0 2px 3px #000;
+}
+.boss-more { align-self:center; font-weight:900; color:#fff; text-shadow:0 2px 3px #000; }
+
+@media (prefers-reduced-motion: reduce) {
+    .boss-face, .boss-face.is-hit, .boss-face.is-hit.then-counter, .boss-face.is-counter, .boss-eye,
+    .boss-hand, .boss-face .boss-hand,
+    .boss-ember, .boss-hp-fill, .boss-damage, .boss-fighter.is-attacking .avatar, .boss-heart.is-breaking { animation:none; }
+    .boss-ember { display:none; }
+    .boss-face.is-defeated { animation:none; opacity:.2; }
+    .boss-damage { opacity:0; }
+    .boss-heart.is-breaking { opacity:.35; }
+}
+
+/* popup ตัวอย่างโหมด: เล่นฉากจริงวนให้ดู พร้อมป้ายสั้น ๆ ไฮไลต์ข้อที่ตรงกับภาพตอนนั้น */
+.mode-demo {
+    position:fixed; inset:0; z-index:1000;
+    display:flex; align-items:center; justify-content:center; padding:16px;
+    background:rgba(0,0,0,.72); animation:mode-demo-in .2s ease-out;
+}
+@keyframes mode-demo-in { from { opacity:0; } }
+.mode-demo-card {
+    width:min(720px,100%); max-height:100%; overflow:auto;
+    display:flex; flex-direction:column; gap:12px; padding:16px;
+    border:3px solid var(--mode-color,#fff); border-radius:18px;
+    background:#1b1b1b; color:#fff; text-align:left; box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+.mode-demo-head { display:flex; align-items:center; gap:10px; }
+.mode-demo-icon { font-size:28px; line-height:1; }
+.mode-demo-title { flex:1; margin:0; font-size:clamp(18px,3vw,26px); }
+.mode-demo-close { padding:4px 8px; border:0; background:transparent; color:#fff; font-size:22px; cursor:pointer; }
+/* เวทีตัวอย่างสูงคงที่ ฉากในเกมที่ปกติขยายเต็มจอจะถูกบีบให้พอดีกล่องนี้ */
+.mode-demo-stage { position:relative; display:flex; height:clamp(200px,42vh,340px); border-radius:14px; overflow:hidden; }
+.mode-demo-stage > * { flex:1 1 auto; min-width:0; min-height:0; }
+.mode-demo-stage .boss-arena { min-height:0; }
+.mode-demo-stage .tower-stage { min-height:0; }
+.mode-demo-fallback { display:flex; align-items:center; justify-content:center; font-size:64px; }
+.mode-demo-steps {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px;
+    margin:0; padding:0; list-style:none;
+}
+.mode-demo-steps li {
+    display:flex; align-items:center; gap:8px; padding:8px 10px;
+    border-radius:10px; background:#2a2a2a; opacity:.45;
+    font-size:clamp(13px,1.6vw,16px); font-weight:800;
+    transition:opacity .25s, background .25s, transform .25s;
+}
+.mode-demo-steps li.is-active { opacity:1; background:var(--mode-color,#444); transform:scale(1.03); }
+.mode-demo-emoji { font-size:22px; line-height:1; }
+.mode-demo-ok {
+    align-self:center; padding:12px 32px; border:0; border-radius:10px;
+    background:var(--mode-color,#26890c); color:#fff; font-size:17px; font-weight:800; cursor:pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+    .mode-demo { animation:none; }
+    .mode-demo-steps li { transition:none; }
+}
+
+/* ตอนขึ้นแท่นรับรางวัล ให้แท่นกินจอเหมือนกัน */
+body.is-final .back,
+body.is-final .eyebrow,
+body.is-final #pin,
+body.is-final #question-count,
+body.is-final .timer,
+/* ปุ่ม Start ตอนจบเกมกดไปก็ไม่มีผล (เซิร์ฟเวอร์รับเฉพาะตอน phase = lobby) ซ่อนทิ้ง */
+body.is-final .host-controls { display:none; }
+body.is-final #podium-view { flex:1 1 auto; display:flex; flex-direction:column; justify-content:center; }
+body.is-final .podium { gap:clamp(10px,2vw,26px); }
+body.is-final .podium-slot { max-width:clamp(150px,20vw,260px); }
+body.is-final .place-1 .podium-step { height:clamp(120px,22vh,220px); }
+body.is-final .place-2 .podium-step { height:clamp(88px,16vh,160px); }
+body.is-final .place-3 .podium-step { height:clamp(64px,12vh,120px); }
+body.is-final .podium-name { font-size:clamp(15px,1.8vw,24px); }
+body.is-final .podium-score { font-size:clamp(15px,1.8vw,24px); }
+/* จอแคบวางปุ่มเรียงต่อท้ายตามปกติ เพราะแถวบนไม่มีที่เหลือให้ยืนแล้ว
+   (ที่ 440px แถบเครื่องมือมุมขวากินไปถึง 258px จาก 440px ปุ่มจะไปทับแถบเครื่องมือ) */
+.final-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+
+/* จอกว้างพอค่อยยกปุ่มขึ้นไปยืนแถวบน เว้นระยะให้พ้นแถบเครื่องมือมุมขวา
+   ไม่งั้นจอ host ตอนจบเกมที่ยาวเต็มจอพอดีอยู่แล้วจะถูกปุ่มดันจนต้องเลื่อน */
+@media (min-width: 760px) {
+    .final-actions { display:contents; }
+    body.is-final #home {
+        position:absolute; top:16px; right:calc(var(--tools-w) + 24px);
+        margin:0; padding:10px 20px; font-size:15px;
+    }
+}
